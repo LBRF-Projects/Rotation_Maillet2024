@@ -75,6 +75,6 @@ input_mappings = {
 training_mapping = 'backwards'
 test_mapping = 'inverted_x'
 
-collect_kviq = False
+collect_kviq = True
 practice_trials = 10
 cursor_size = 1.0  # degrees
