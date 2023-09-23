@@ -8,6 +8,7 @@ from klibs.KLUserInterface import (
 )
 from klibs.KLUtilities import deg_to_px
 from klibs.KLGraphics import fill, blit, flip, NumpySurface
+from klibs.KLText import add_text_style
 from klibs.KLCommunication import message
 
 from InterfaceExtras import Button, LikertType, ThoughtProbe, Aesthetics
@@ -174,7 +175,7 @@ def render_text(msgs, spacing=None, align="center", width=None):
         if len(rendered) > 0:
             total_height += spacing
         # Render the message and add its height to the total
-        chunk = message(msg, blit_txt=False, align=align, wrap_width=width)
+        chunk = message(msg, align=align, wrap_width=width)
         total_height += chunk.height
         rendered.append(chunk)
 
@@ -210,7 +211,7 @@ def demo_msg(msgs, extras=None, wait=0.1, resp=True, spacing=None, width=None):
         smart_sleep(wait * 1000)
     flush()
     while resp:
-        q = pump(True)
+        q = pump()
         if key_pressed('space', queue=q) or mouse_clicked(queue=q):
             break
 
@@ -228,6 +229,7 @@ class KVIQ(object):
     def __init__(self, left_handed=False):
         self.left_handed = left_handed
         self.extras = [] # Extra stimuli for demo_msg
+        add_text_style('title', '0.75deg')
 
 
     def run(self):
@@ -242,7 +244,7 @@ class KVIQ(object):
 
     def _update_title(self, movement):
         loc = (P.screen_c[0], int(P.screen_y * 0.15))
-        title = message(movement, style="title", blit_txt=False)
+        title = message(movement, style="title")
         self.extras = [{'img': title, 'reg': 8, 'loc': loc}] 
 
 
@@ -322,7 +324,7 @@ class KVIQ(object):
         else:
             prompt_adj = "clear"
             choices = visual_ratings
-        prompt = message(prompt_txt.format(prompt_adj), blit_txt=False)
+        prompt = message(prompt_txt.format(prompt_adj))
 
         # Create the rating prompt for the current imagery type
         scale_loc = (P.screen_c[0], int(P.screen_y * 0.3))
@@ -335,7 +337,7 @@ class KVIQ(object):
         if demo:
             show_cursor()
             while True:
-                q = pump(True)
+                q = pump()
                 if key_pressed(' ', queue=q) or mouse_clicked(queue=q):
                     break
                 fill()

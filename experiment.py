@@ -16,6 +16,7 @@ from klibs.KLEventQueue import flush, pump
 from klibs.KLUtilities import angle_between, point_pos, deg_to_px, px_to_deg
 from klibs.KLUtilities import line_segment_len as linear_dist
 from klibs.KLTime import CountDown, precise_time
+from klibs.KLText import add_text_style
 from klibs.KLCommunication import message
 from klibs.KLUserInterface import (
     any_key, mouse_pos, ui_request, hide_cursor, smart_sleep,
@@ -45,7 +46,6 @@ class MotorMapping(klibs.Experiment):
             'participants', columns=['handedness'], where={'id': P.participant_id}
         )[0][0]
         if P.collect_kviq:
-            self.txtm.add_style('title', '0.75deg')
             kviq = KVIQ(handedness == "l")
             responses = kviq.run()
             for movement, dat in responses.items():
@@ -79,7 +79,7 @@ class MotorMapping(klibs.Experiment):
             self.gamepad = controllers[0]
             self.gamepad.initialize()
             print(self.gamepad._info)
-        self.txtm.add_style('debug', '0.3deg')
+        add_text_style('debug', '0.3deg')
 
         # Define error messages for the task
         err_txt = {
@@ -104,7 +104,7 @@ class MotorMapping(klibs.Experiment):
         }
         self.errs = {}
         for key, txt in err_txt.items():
-            self.errs[key] = message(txt, blit_txt=False, align="center")
+            self.errs[key] = message(txt, align="center")
 
         # Insert practice block
         self.insert_practice_block(1, trial_counts=P.practice_trials)
@@ -167,8 +167,8 @@ class MotorMapping(klibs.Experiment):
             block_msg = block_msgs["PP"] + "\n\n" + inverted_msg
 
         # Show block start message
-        msg = message(block_msg, blit_txt=False, align="center")
-        msg2 = message("Press any button to start.", blit_txt=False)
+        msg = message(block_msg, align="center")
+        msg2 = message("Press any button to start.")
         self.show_feedback(msg, duration=2.0, location=self.msg_loc)
         fill()
         blit(msg, 5, self.msg_loc)
@@ -189,8 +189,8 @@ class MotorMapping(klibs.Experiment):
         self.target_onset = randrange(1000, 3000, 100)
 
         # Add timecourse of events to EventManager
-        self.evm.register_ticket(['target_on', self.target_onset])
-        self.evm.register_ticket(['timeout', self.target_onset + 15000])
+        self.evm.add_event('target_on', onset=self.target_onset)
+        self.evm.add_event('timeout', onset=15000, after='target_on')
 
         # Set mouse to screen centre & ensure mouse pointer hidden
         mouse_pos(position=P.screen_c)
@@ -220,7 +220,7 @@ class MotorMapping(klibs.Experiment):
         first_loop = True
         over_target = False
         while self.evm.before('timeout'):
-            q = pump(True)
+            q = pump()
             ui_request(queue=q)
 
             # Get latest joystick/trigger data from gamepad
@@ -337,7 +337,7 @@ class MotorMapping(klibs.Experiment):
         # Show RT feedback for 1 second (may remove this)
         if response_rt:
             rt_sec = "{:.3f}".format(response_rt)
-            feedback = message(rt_sec, blit_txt=False)
+            feedback = message(rt_sec)
             self.show_feedback(feedback, duration=1.0)
         elif err == "NA":
             feedback = self.errs['too_slow']
@@ -383,7 +383,7 @@ class MotorMapping(klibs.Experiment):
         end_txt = (
             "You're all done, thanks for participating!\nPress any button to exit."
         )
-        end_msg = message(end_txt, blit_txt=False, align='center')
+        end_msg = message(end_txt, align='center')
         fill()
         blit(end_msg, 5, P.screen_c)
         flip()
@@ -402,7 +402,7 @@ class MotorMapping(klibs.Experiment):
         if not isinstance(msgs, list):
             msgs = [msgs]
         for msg in msgs:
-            txt = message(msg, blit_txt=False, align="center")
+            txt = message(msg, align="center")
             blit(txt, 8, (msg_x, msg_y))
             msg_y += txt.height + half_space
     
@@ -421,7 +421,7 @@ class MotorMapping(klibs.Experiment):
         # Initialize task stimuli for the demo
         target_dist = (2 * self.target_dist_min + self.target_dist_max) / 3
         target_loc = vector_to_pos(P.screen_c, target_dist, 250)
-        feedback = message("{:.3f}".format(2.841), blit_txt=False)
+        feedback = message("{:.3f}".format(2.841))
         base_layout = [
             (self.fixation, P.screen_c),
             (self.cursor, P.screen_c),
@@ -453,7 +453,7 @@ class MotorMapping(klibs.Experiment):
         target_dist = (self.target_dist_min + self.target_dist_max) / 2
         target_loc = vector_to_pos(P.screen_c, target_dist, 165)
         if P.condition == "MI":
-            feedback = message("{:.3f}".format(3.347), blit_txt=False)
+            feedback = message("{:.3f}".format(3.347))
             self.show_demo_text(
                 ("In some parts of the study, you will be asked to perform this task "
                 "using motor imagery,\ni.e. imagine what it would *look and feel like* "
@@ -508,7 +508,7 @@ class MotorMapping(klibs.Experiment):
             "Right Trigger: {5}",
             "D-Pad: ({6}, {7})",
         ]).format(ls_x, ls_y, rs_x, rs_y, lt, rt, dpad_x, dpad_y)
-        pad_info = message(info_txt, style='debug', blit_txt=False)
+        pad_info = message(info_txt, style='debug')
         blit(pad_info, 1, (0, P.screen_y))
 
 
@@ -586,7 +586,7 @@ def wait_for_input(gamepad=None):
     while not user_input:
         if gamepad:
             gamepad.update()
-        q = pump(True)
+        q = pump()
         ui_request(queue=q)
         for event in q:
             if event.type in valid_input:
