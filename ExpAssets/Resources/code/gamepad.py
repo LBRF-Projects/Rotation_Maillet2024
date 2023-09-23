@@ -249,7 +249,7 @@ class GameController(object):
         # Try opening the gamepad
         error.SDL_ClearError()
         self._pad = gc.SDL_GameControllerOpen(self._index)
-        if error.SDL_GetError() != b"":
+        if not self._pad:
             e = "opening controller {0} ({1})".format(self._index, self._info['name'])
             raise_sdl_err(e)
 
@@ -267,7 +267,7 @@ class GameController(object):
             self._stick = None
 
     def update(self):
-        pass
+        pass#gc.SDL_GameControllerUpdate()
 
     def _get_stick(self, xaxis, yaxis):
         error.SDL_ClearError()
