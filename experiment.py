@@ -70,6 +70,8 @@ class MotorMapping(klibs.Experiment):
         self.fixation = kld.FixationCross(
             fixation_size, fixation_thickness, rotation=45, fill=WHITE
         )
+        if P.development_mode and P.show_gamepad_debug:
+            add_text_style('debug', '0.3deg')
 
         # Initialize gamepad (if present)
         self.gamepad = None
@@ -79,7 +81,6 @@ class MotorMapping(klibs.Experiment):
             self.gamepad = controllers[0]
             self.gamepad.initialize()
             print(self.gamepad._info)
-        add_text_style('debug', '0.3deg')
 
         # Define error messages for the task
         err_txt = {
@@ -304,8 +305,8 @@ class MotorMapping(klibs.Experiment):
             if self.evm.after('target_on'):
                 blit(self.target, 5, self.target_loc)
             blit(self.cursor, 5, cursor_pos)
-            #if P.development_mode:
-            #    self.show_gamepad_debug()
+            if P.development_mode and P.show_gamepad_debug:
+                self.show_gamepad_debug()
             flip()
 
             # Get timestamp for when target drawn to the screen
