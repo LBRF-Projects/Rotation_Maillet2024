@@ -517,9 +517,12 @@ class MotorMapping(klibs.Experiment):
             flip()
         
     
-    def get_stick_position(self):
+    def get_stick_position(self, left=False):
         if self.gamepad:
-            raw_x, raw_y = self.gamepad.right_stick()
+            if left:
+                raw_x, raw_y = self.gamepad.left_stick()
+            else:
+                raw_x, raw_y = self.gamepad.right_stick()
         else:
             # If no gamepad, approximate joystick with mouse movement
             mouse_x, mouse_y = mouse_pos()
