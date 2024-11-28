@@ -11,7 +11,8 @@ stick_map = {
 }
 
 CUSTOM_MAPPINGS = [
-    ['03007a126d04000014c2000005020', 'Logitech Attack 3', stick_map]
+    ['03007a126d04000014c2000005020', 'Logitech Attack 3', stick_map],
+    ['0300ea9f6d04000015c2000011570000', 'Logitech Extreme 3D pro', stick_map],
 ]
 
 
