@@ -82,6 +82,7 @@ class MotorMapping(klibs.Experiment):
             self.gamepad = controllers[0]
             self.gamepad.initialize()
             print(self.gamepad._info)
+        self.rotation = 0
 
         # Define error messages for the task
         err_txt = {
@@ -231,7 +232,7 @@ class MotorMapping(klibs.Experiment):
 
             # Filter, standardize, and possibly invert the axis & trigger data
             lt, rt = self.get_triggers()
-            jx, jy = self.get_stick_position()
+            jx, jy = self.get_stick_position(rotation=self.rotation)
             input_time = precise_time()
             cursor_pos = (
                 P.screen_c[0] + int(jx * self.cursor_dist_max * mod_x),
@@ -527,7 +528,7 @@ class MotorMapping(klibs.Experiment):
             flip()
         
     
-    def get_stick_position(self, left=False):
+    def get_stick_position(self, left=False, rotation=0):
         if self.gamepad:
             if left:
                 raw_x, raw_y = self.gamepad.left_stick()
@@ -540,7 +541,7 @@ class MotorMapping(klibs.Experiment):
             raw_x = int((mouse_x - P.screen_c[0]) * scale_factor)
             raw_y = int((mouse_y - P.screen_c[1]) * scale_factor)
 
-        return joystick_scaled(raw_x, raw_y)
+        return joystick_scaled(raw_x, raw_y, rotation=rotation)
 
     
     def get_triggers(self):
@@ -560,7 +561,7 @@ class MotorMapping(klibs.Experiment):
 
 
 
-def joystick_scaled(x, y, deadzone = 0.2):
+def joystick_scaled(x, y, deadzone = 0.2, rotation = 0):
 
     # Check whether the current stick x/y exceeds the specified deadzone
     amplitude = min(1.0, sqrt(x ** 2 + y ** 2) / AXIS_MAX)
@@ -572,7 +573,7 @@ def joystick_scaled(x, y, deadzone = 0.2):
     # to coordinates.
     angle = angle_between((0, 0), (x, y))
     amp_new = (amplitude - deadzone) / (1.0 - deadzone)
-    xs, ys = point_pos((0, 0), amp_new, angle, return_int=False)
+    xs, ys = point_pos((0, 0), amp_new, angle, rotation=-rotation, return_int=False)
 
     return (xs, ys)
 
