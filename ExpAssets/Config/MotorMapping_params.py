@@ -52,6 +52,7 @@ default_condition = 'PP'
 dm_trial_show_mouse = False
 dm_ignore_local_overrides = False
 show_gamepad_debug = False
+max_trials_per_block = False
 
 #########################################
 # Data Export Settings

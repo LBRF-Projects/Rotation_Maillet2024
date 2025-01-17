@@ -10,6 +10,7 @@ import sdl2
 import klibs
 from klibs import P
 from klibs.KLExceptions import TrialException
+from klibs.KLTrialFactory import TrialIterator
 from klibs.KLGraphics import fill, flip, blit
 from klibs.KLGraphics import KLDraw as kld
 from klibs.KLEventQueue import flush, pump
@@ -25,6 +26,7 @@ from klibs.KLUserInterface import (
 from KVIQ import KVIQ
 from gamepad import gamepad_init, button_pressed
 from gamepad_usb import get_all_controllers
+from klibs_wip import Block
 
 # Define colours for use in the experiment
 WHITE = (255, 255, 255)
@@ -109,8 +111,15 @@ class MotorMapping(klibs.Experiment):
         for key, txt in err_txt.items():
             self.errs[key] = message(txt, align="center")
 
-        # Insert practice block
-        self.insert_practice_block(1, trial_counts=P.practice_trials)
+        # Define custom session structure & trial counts
+        structure = [
+            Block({}, label='practice', trials=10),
+            Block({}, label='training', trials=50),
+            Block({}, label='test', trials=50),
+        ]
+        self.blocks, self.block_labels = generate_trials(structure)
+        P.blocks_per_experiment = len(self.blocks)
+        self.phase = None
 
         # Run a visual demo explaining the task
         self.task_demo()
@@ -151,8 +160,7 @@ class MotorMapping(klibs.Experiment):
         }
 
         # Handle different phases of the experiment
-        block_sequence = ["practice", "training", "test"]
-        self.phase = block_sequence[P.block_number - 1]
+        self.phase = self.block_labels[P.block_number - 1]
         if self.phase == "practice":
             self.joystick_map = P.training_mapping
             self.trial_type = "PP"
@@ -559,6 +567,26 @@ class MotorMapping(klibs.Experiment):
 
         return (raw_lt / TRIGGER_MAX, raw_rt / TRIGGER_MAX)
 
+
+def generate_trials(structure):
+
+    block_set = []
+    block_labels = []
+
+    for block in structure:
+        if block.practice and not P.run_practice_blocks:
+            continue
+
+        block_labels.append(block.label)
+        tmp = block.get_trials()
+        if P.max_trials_per_block != False:
+            tmp = tmp[:P.max_trials_per_block]
+
+        trials = TrialIterator(tmp)
+        trials.practice = block.practice
+        block_set.append(trials)
+
+    return block_set, block_labels
 
 
 def joystick_scaled(x, y, deadzone = 0.2, rotation = 0):
