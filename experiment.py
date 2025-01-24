@@ -269,7 +269,7 @@ class MotorMapping(klibs.Experiment):
                 if not movement_rt and cursor_movement > 0:
                     movement_rt = input_time - target_on
                 # Once cursor has moved slightly away from origin, log initial angle
-                if not initial_angle and px_to_deg(cursor_movement) > 0.1:
+                if not initial_angle and px_to_deg(cursor_movement) > 1.0:
                     # Wait at least 50 ms after first movement before calculating angle
                     # (otherwise we get lots of 270s due to no y-axis change)
                     if input_time - (target_on + movement_rt) > 0.05:
