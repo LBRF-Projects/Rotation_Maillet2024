@@ -84,6 +84,7 @@ class MotorMapping(klibs.Experiment):
             self.gamepad = controllers[0]
             self.gamepad.initialize()
             print(self.gamepad._info)
+        self.joystick_map = "normal"
         self.rotation = 0
 
         # Define error messages for the task
@@ -93,16 +94,16 @@ class MotorMapping(klibs.Experiment):
             ),
             "too_slow": "Too slow!\nPlease try to respond faster.",
             "start_triggers": (
-                "Please fully release the triggers before the start of each trial."
+                "Please fully release the trigger before the start of each trial."
             ),
             "stick_mi": (
                 "Joystick moved!\n"
-                "Please try to only *imagine* moving the stick over the target\n"
+                "Please try to only *imagine* moving the joystick to the target\n"
                 "without actually performing the movement."
             ),
             "stick_cc": (
                 "Joystick moved!\n"
-                "Please pull the trigger as soon as you see the target, without\n"
+                "Please respond using the trigger alone, without\n"
                 "moving the cursor."
             ),
             "continue": "Press any button to continue.",
@@ -113,16 +114,18 @@ class MotorMapping(klibs.Experiment):
 
         # Define custom session structure & trial counts
         structure = [
-            Block({}, label='practice', trials=10),
-            Block({}, label='training', trials=50),
-            Block({}, label='test', trials=50),
+            Block({}, label='baseline', trials=40),
+            Block({}, label='pretest', trials=10),
+            Block({}, label='training', trials=200),
+            Block({}, label='posttest', trials=10),
+            Block({}, label='washout', trials=40),
         ]
         self.blocks, self.block_labels = generate_trials(structure)
         P.blocks_per_experiment = len(self.blocks)
         self.phase = None
 
         # Run a visual demo explaining the task
-        self.task_demo()
+        #self.task_demo()
 
 
     def block(self):
@@ -130,52 +133,54 @@ class MotorMapping(klibs.Experiment):
         hide_cursor()
 
         block_msgs = {
-            "PP": (
-                "For this next set of trials, please respond to targets physically by\n"
-                "using the gamepad's right stick to move the cursor over them."
+            "baseline": (
+                "For this first set of trials, please respond to targets physically "
+                "by\nusing the joystick stick to move the cursor over them."
             ),
-            "MI": (
-                "For this next set of trials, please respond to targets using *motor "
-                "imagery*,\nimagining what it would feel like to move the cursor over "
-                "each target\n(without actually moving), then physically pressing the "
-                "left trigger when finished.\n\nPlease keep your thumb resting on the "
-                "right stick."
+            "pretest": (
+                "Now you will have a chance to practice the rotated task yourself.\n"
+                "Try your best to still respond quickly as you adapt to the 45° shift."
             ),
-            "CC": (
-                "For this next set of trials, please respond to targets by simply "
-                "pressing\nthe left trigger as quickly as possible, without moving the "
-                "cursor."
+            "training_PP": (
+                "For the next phase of the task, please continue to respond quickly "
+                "to\ntargets using the joystick. Try your best to adapt to the "
+                "rotation."
+            ),
+            "training_MI": (
+                "When you are ready, you will begin to practice the rotated task using "
+                "motor imagery.\nRemember to not physically move the joystick when "
+                "imagining the movement!\n\n"
+                "Try your best to mentally practice adapting to the rotation."
+            ),
+            "training_CC": (
+                "For the next phase of the task, please respond to targets *without*\n"
+                "moving the joystick by simply pressing the trigger after a brief "
+                "delay.\n\n"
+                "Try to get a reaction time as close to 1.500 as you can."
+            ),
+            "posttest": (
+                "For this next part of the task, you will perform a few more rotated "
+                "trials\n*physically* to assess how well you adjusted to the rotation."
+            ),
+            "washout": (
+                "For the final phase of the task, please continue to respond to "
+                "targets\nphysically by using the joystick to move the cursor.\n\n"
+                "Note that the rotation may feel a little different than before."
             )
-        }
-        inverted_msg = (
-            "Note that for this block, the joystick controls will be different:\n"
-            "The left-right axis has been flipped, such that moving the stick left\n"
-            "or right will have the opposite effect it used to."
-        )
-        direction_map = {
-            'normal': ("up", "up", "right", "right"),
-            'backwards': ("up", "down", "left", "right"),
-            'inverted_x': ("up", "up", "left", "right"),
-            'inverted_y': ("up", "down", "right", "right"),
         }
 
         # Handle different phases of the experiment
         self.phase = self.block_labels[P.block_number - 1]
-        if self.phase == "practice":
-            self.joystick_map = P.training_mapping
-            self.trial_type = "PP"
-            block_msg = "This is a practice block.\n\n" + block_msgs["PP"]
-            block_msg = block_msg.replace("next", "first")
-        elif self.phase == "training":
-            self.joystick_map = P.training_mapping
-            self.trial_type = P.condition
-            block_msg = block_msgs[self.trial_type]
-            if self.trial_type == "PP":
-                block_msg = block_msg.replace("please", "please continue to")
-        elif self.phase == "test":
-            self.joystick_map = P.test_mapping
-            self.trial_type = "PP"
-            block_msg = block_msgs["PP"] + "\n\n" + inverted_msg
+        self.trial_type = P.condition if self.phase == "training" else "PP"
+        self.rotation = 0 if self.phase in ["baseline", "washout"] else -45
+        if self.phase == "training":
+            block_msg = block_msgs["training_" + P.condition]
+            if P.condition == "MI":
+                self.training_instructions_mi()
+        else:
+            block_msg = block_msgs[self.phase]
+            if self.phase == "pretest":
+                self.rotation_instructions()
 
         # Show block start message
         msg = message(block_msg, align="center")
@@ -432,7 +437,7 @@ class MotorMapping(klibs.Experiment):
         # Initialize task stimuli for the demo
         target_dist = (2 * self.target_dist_min + self.target_dist_max) / 3
         target_loc = vector_to_pos(P.screen_c, target_dist, 250)
-        feedback = message("{:.3f}".format(2.841))
+        feedback = message("{:.3f}".format(1.841))
         base_layout = [
             (self.fixation, P.screen_c),
             (self.cursor, P.screen_c),
@@ -451,13 +456,13 @@ class MotorMapping(klibs.Experiment):
         )
         self.show_demo_text(
             ("Your job will be to quickly move the red cursor over top of the target "
-             "when it appears,\nusing the right stick on the gamepad."),
+             "when it appears,\nusing the joystick to control it."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
              (self.cursor, (target_loc[0] + 4, target_loc[1] + 6))]
         )
         self.show_demo_text(
-            ("Once you have moved the cursor over the target, please squeeze the left "
-             "trigger on the \nback of the gamepad to end the trial. You will be shown "
+            ("Once you have moved the cursor over the target, please squeeze the "
+             "trigger on the\njoystick to end the trial. You will be shown "
              "your reaction time."),
             [(feedback, P.screen_c)]
         )
@@ -468,36 +473,99 @@ class MotorMapping(klibs.Experiment):
             self.show_demo_text(
                 ("In some parts of the study, you will be asked to perform this task "
                 "using motor imagery,\ni.e. imagine what it would *look and feel like* "
-                "to move the cursor over the target."),
+                "to move the cursor using the joystick."),
                 [(self.fixation, P.screen_c), (self.target, target_loc),
                 (self.cursor, P.screen_c)]
             )
             self.show_demo_text(
                 ("When the target appears on an imagery trial, try to mentally "
-                 "simulate performing\nthe thumb movement required to move the cursor "
+                 "simulate performing\nthe arm movements required to move the cursor "
                  "over the target (without actually moving)."),
                 [(self.fixation, P.screen_c), (self.target, target_loc),
                  (self.cursor, P.screen_c)]
             )
             self.show_demo_text(
                 ("Once you have imagined the movement and are over the target (in your "
-                 "mind's eye),\nplease physically squeeze the left trigger to end the "
-                 "trial."),
+                 "mind's eye),\nplease physically squeeze the trigger on the "
+                 "joystick to end the trial."),
                 [(feedback, P.screen_c)]
             )
         if P.condition == "CC":
             self.show_demo_text(
                 ("In some parts of the study, instead of moving the cursor to the "
-                "target, you will be\nasked to simply squeeze the left trigger as soon "
-                "as the target appears."),
+                "target, you will be\nasked to simply press the trigger 1.5 seconds "
+                "after the target appears."),
                 [(self.fixation, P.screen_c), (self.target, target_loc),
                 (self.cursor, P.screen_c)]
             )
             self.show_demo_text(
                 ("As usual, pressing the trigger will end the trial and display your "
-                 "reaction time.\nPlease try to respond as quickly as possible."),
+                 "reaction time.\nPlease try to get a reaction time as close to 1.500 "
+                 "as possible."),
                 [(feedback, P.screen_c)]
             )
+
+
+    def rotation_instructions(self):
+        # Initialize task stimuli for the demo
+        target_dist = (2 * self.target_dist_min + self.target_dist_max) / 3
+        target_loc = vector_to_pos(P.screen_c, target_dist, 225)
+        cursor_loc_miss = vector_to_pos(P.screen_c, target_dist, 180)
+        cursor_loc_adj = (target_loc[0] + 4, target_loc[1] + 6)
+        feedback = message("{:.3f}".format(2.431))
+        
+        # Actually run through demo
+        self.show_demo_text(
+            ("Now that you have gotten the hang of the task, we are going to\n"
+             "make it a bit more challenging."),
+            [(self.fixation, P.screen_c), (self.cursor, P.screen_c)]
+        )
+        self.show_demo_text(
+            ("Specifically, cursor movement will now be rotated 45° counter-clockwise "
+             "such that\njoystick movement and cursor movement are no longer aligned."),
+            [(self.fixation, P.screen_c), (self.target, target_loc),
+             (self.cursor, cursor_loc_miss)]
+        )
+        # NOTE: add another page with a example to really drill it in?
+        self.show_demo_text(
+            ("This may take some time to get used to. Do your best to try and adapt "
+             "to\nthe rotation by adjusting your joystick movement to compensate."),
+            [(self.fixation, P.screen_c), (self.target, target_loc),
+             (self.cursor, cursor_loc_adj)]
+        )
+        self.show_demo_text(
+            ("Despite the rotation, please continue to try and respond to targets\n"
+             "as quickly as possible!"),
+            [(feedback, P.screen_c)]
+        )
+
+
+    def training_instructions_mi(self):
+        # Initialize task stimuli for the demo
+        target_dist = (2 * self.target_dist_min + self.target_dist_max) / 3
+        target_loc = vector_to_pos(P.screen_c, target_dist, 225)
+        cursor_loc_miss = vector_to_pos(P.screen_c, target_dist, 180)
+        cursor_loc_adj = (target_loc[0] + 4, target_loc[1] + 6)
+        
+        # Actually run through demo
+        self.show_demo_text(
+            ("Now that you have had a chance to practice the rotated task "
+             "*physically*, in the\nnext phase you will practice the rotation "
+             "*mentally* using motor imagery."),
+            [(self.fixation, P.screen_c), (self.cursor, P.screen_c)]
+        )
+        self.show_demo_text(
+            ("Do your best to mentally simulate the arm and wrist movements needed to\n"
+             "bring the cursor to the target, keeping in mind the 45° rotation."),
+            [(self.fixation, P.screen_c), (self.target, target_loc),
+             (self.cursor, cursor_loc_miss)]
+        )
+        self.show_demo_text(
+            ("Make sure to imagine how the movements would *feel* in your arm and "
+             "wrist\nin addition to how the cursor would move on screen in response."),
+            [(self.fixation, P.screen_c), (self.target, target_loc),
+             (self.cursor, cursor_loc_adj)]
+        )
 
 
     def show_gamepad_debug(self):
