@@ -384,8 +384,9 @@ class MotorMapping(klibs.Experiment):
         return {
             "block_num": P.block_number,
             "trial_num": P.trial_number,
+            "phase": self.phase,
             "trial_type": self.trial_type,
-            "mapping": self.joystick_map,
+            "rotation": self.rotation,
             "target_onset": self.target_onset if target_on else "NA",
             "target_dist": px_to_deg(self.target_dist),
             "target_angle": self.target_angle,
