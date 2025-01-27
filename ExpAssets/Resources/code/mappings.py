@@ -2,6 +2,12 @@ import re
 from sdl2 import gamecontroller as gc
 from sdl2.ext.common import raise_sdl_err
 
+# To add a mapping for an unrecognized controller, simply add a new line to the
+# CUSTOM_MAPPINGS list with its name, GUID, and mapping. The first two values
+# can be copied from the console after launching the task with an unknown
+# controller. For the mapping itself you can try using the default 'stick_map'
+# and modify it as needed, mapping axes (e.g. 'a0') and buttons (e.g. 'b1')
+# to specific standard names (e.g. 'a', 'b', 'x', 'y', 'righty', 'leftx').
 
 stick_map = {
     'rightx': 'a0',

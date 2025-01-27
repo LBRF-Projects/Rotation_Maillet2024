@@ -24,8 +24,7 @@ from klibs.KLUserInterface import (
 )
 
 from KVIQ import KVIQ
-from gamepad import gamepad_init, button_pressed
-from gamepad_usb import get_all_controllers
+from gamepad import gamepad_init, get_controllers
 from klibs_wip import Block
 
 # Define colours for use in the experiment
@@ -79,7 +78,7 @@ class MotorMapping(klibs.Experiment):
         # Initialize gamepad (if present)
         self.gamepad = None
         gamepad_init()
-        controllers = get_all_controllers()
+        controllers = get_controllers()
         if len(controllers):
             self.gamepad = controllers[0]
             self.gamepad.initialize()
@@ -125,7 +124,7 @@ class MotorMapping(klibs.Experiment):
         self.phase = None
 
         # Run a visual demo explaining the task
-        #self.task_demo()
+        self.task_demo()
 
 
     def block(self):

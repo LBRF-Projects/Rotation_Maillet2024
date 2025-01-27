@@ -109,6 +109,15 @@ def get_controllers():
         if gc.SDL_IsGameController(i) == SDL_TRUE:
             pad = GameController(i)
             devices.append(pad)
+        else:
+            info = _get_joystick_info(i)
+            print("\nUnknown controller detected!\n")
+            print(" - name: '{0}'".format(info['name']))
+            print(" - guid: '{0}'".format(info['guid']))
+            print(
+                "\nTo use this controller for the task, please add a mapping for it to "
+                "the\nmappings.py file in ExpAssets/Resource/code using the info above."
+            )
     return devices
 
 
