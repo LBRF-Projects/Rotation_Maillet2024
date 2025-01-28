@@ -3,7 +3,7 @@
 __author__ = "Austin Hurst"
 
 from math import sqrt
-from random import randrange, choice
+from random import randrange, shuffle
 from ctypes import c_int, byref
 
 import sdl2
@@ -75,6 +75,14 @@ class MotorMapping(klibs.Experiment):
         if P.development_mode and P.show_gamepad_debug:
             add_text_style('debug', '0.3deg')
 
+        # Define quadrants for targets
+        self.quadrants = {
+            'a': (0, 90),
+            'b': (90, 180),
+            'c': (180, 270),
+            'd': (270, 360),
+        }
+
         # Initialize gamepad (if present)
         self.gamepad = None
         gamepad_init()
@@ -130,6 +138,17 @@ class MotorMapping(klibs.Experiment):
     def block(self):
         # Hide mouse cursor if not already hidden
         hide_cursor()
+
+        # Generate target quadrants for the block to avoid repeat locations
+        trial_count = self.blocks[P.block_number - 1].length
+        self.quadrant_list = []
+        while len(self.quadrant_list) < trial_count:
+            tmp = list(self.quadrants.keys())
+            shuffle(tmp)
+            # Avoid repeating the same quadrant twice
+            if len(self.quadrant_list) and self.quadrant_list[-1] == tmp[0]:
+                tmp.reverse()
+            self.quadrant_list += tmp
 
         block_msgs = {
             "baseline": (
@@ -204,10 +223,9 @@ class MotorMapping(klibs.Experiment):
                 )
 
         # Generate trial factors
-        self.target_angle = randrange(0, 360, 1)
-        if self.phase == "test":
-            # Don't do targets in 10° above or below target in last block
-            self.target_angle = choice([randrange(5, 175, 1), randrange(185, 355, 1)])
+        quadrant = self.quadrant_list[P.trial_number - 1]
+        angle_min, angle_max = self.quadrants[quadrant]
+        self.target_angle = randrange(angle_min, angle_max, 1)
         self.target_dist = randrange(self.target_dist_min, self.target_dist_max)
         self.target_loc = vector_to_pos(P.screen_c, self.target_dist, self.target_angle)
         self.target_onset = randrange(1000, 3000, 100)
