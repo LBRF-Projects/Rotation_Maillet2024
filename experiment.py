@@ -259,6 +259,7 @@ class MotorMapping(klibs.Experiment):
         flip()
 
         target_on = None
+        target_drawn = False
         first_loop = True
         over_target = False
         while self.evm.before('timeout'):
@@ -345,13 +346,14 @@ class MotorMapping(klibs.Experiment):
             blit(self.fixation, 5, P.screen_c)
             if self.evm.after('target_on'):
                 blit(self.target, 5, self.target_loc)
+                target_drawn = True
             blit(self.cursor, 5, cursor_pos)
             if P.development_mode and P.show_gamepad_debug:
                 self.show_gamepad_debug()
             flip()
 
             # Get timestamp for when target drawn to the screen
-            if not target_on and self.evm.after('target_on'):
+            if not target_on and target_drawn:
                 target_on = precise_time()
                 
             # Check if the cursor is currently over the target
