@@ -342,15 +342,17 @@ class MotorMapping(klibs.Experiment):
                 last_y = cursor_pos[1]
             
             # Actually draw stimuli to the screen
-            fill()
-            blit(self.fixation, 5, P.screen_c)
-            if self.evm.after('target_on'):
-                blit(self.target, 5, self.target_loc)
-                target_drawn = True
-            blit(self.cursor, 5, cursor_pos)
-            if P.development_mode and P.show_gamepad_debug:
-                self.show_gamepad_debug()
-            flip()
+            redraw = self.trial_type == "PP" or not target_on
+            if redraw:
+                fill()
+                blit(self.fixation, 5, P.screen_c)
+                if self.evm.after('target_on'):
+                    blit(self.target, 5, self.target_loc)
+                    target_drawn = True
+                blit(self.cursor, 5, cursor_pos)
+                if P.development_mode and P.show_gamepad_debug:
+                    self.show_gamepad_debug()
+                flip()
 
             # Get timestamp for when target drawn to the screen
             if not target_on and target_drawn:
