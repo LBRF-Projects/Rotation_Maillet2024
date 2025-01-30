@@ -153,7 +153,7 @@ class MotorMapping(klibs.Experiment):
         block_msgs = {
             "baseline": (
                 "For this first set of trials, please respond to targets physically "
-                "by\nusing the joystick stick to move the cursor over them."
+                "by\nusing the joystick to move the cursor over them."
             ),
             "pretest": (
                 "Now you will have a chance to practice the rotated task yourself.\n"
@@ -441,7 +441,7 @@ class MotorMapping(klibs.Experiment):
             self.gamepad.close()
 
 
-    def show_demo_text(self, msgs, stim_set, duration=1.0, wait=True, msg_y=None):
+    def show_demo_text(self, msgs, stim_set, duration=2.0, wait=True, msg_y=None):
         msg_x = int(P.screen_x / 2)
         msg_y = int(P.screen_y * 0.25) if msg_y is None else msg_y
         half_space = deg_to_px(0.5)
@@ -460,7 +460,10 @@ class MotorMapping(klibs.Experiment):
             for loc in locs:
                 blit(stim, 5, loc)
         flip()
-        smart_sleep(duration * 1000)
+        if P.development_mode and wait:
+            smart_sleep(500)
+        else:
+            smart_sleep(duration * 1000)
         if wait:
             wait_for_input(self.gamepad)
 
