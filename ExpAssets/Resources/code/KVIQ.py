@@ -140,7 +140,7 @@ kviq_movements = {
 }
 
 start_pos_prefix = "The starting position for this movement is to be sitting "
-movement_prefix = "To perform this movement, please "
+movement_prefix = "To perform this movement, you will be asked to "
 wait_msg = "Please wait for a researcher to demonstrate the movement."
 
 visual_ratings = {
@@ -289,7 +289,7 @@ class KVIQ(object):
             info['start_pos'] = swap_laterality(info['start_pos'])
         info = [
             start_pos_prefix + info['start_pos'],
-            movement_prefix + desc_1st + "\n",
+            movement_prefix + desc_1st + "\n\n",
             wait_msg,
         ]
         demo_msg(info, self.extras, width=int(P.screen_x * 0.65))
