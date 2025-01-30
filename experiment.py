@@ -520,6 +520,12 @@ class MotorMapping(klibs.Experiment):
                  (self.cursor, P.screen_c)]
             )
             self.show_demo_text(
+                ("Please keep your hand resting on the joystick normally as you "
+                 "imagine\nperforming the movement."),
+                [(self.fixation, P.screen_c), (self.target, target_loc),
+                 (self.cursor, P.screen_c)]
+            )
+            self.show_demo_text(
                 ("Once you have imagined the movement and are over the target (in your "
                  "mind's eye),\nplease physically squeeze the trigger on the "
                  "joystick to end the trial."),
@@ -561,10 +567,16 @@ class MotorMapping(klibs.Experiment):
             [(self.fixation, P.screen_c), (self.target, target_loc),
              (self.cursor, cursor_loc_miss)]
         )
-        # NOTE: add another page with a example to really drill it in?
         self.show_demo_text(
             ("This may take some time to get used to. Do your best to try and adapt "
              "to\nthe rotation by adjusting your joystick movement to compensate."),
+            [(self.fixation, P.screen_c), (self.target, target_loc),
+             (self.cursor, cursor_loc_adj)]
+        )
+        self.show_demo_text(
+            ("Your job is to try and adapt your movements to the rotation so that "
+             "moving the\ncursor straight towards the target eventually feels normal "
+             "and automatic again."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
              (self.cursor, cursor_loc_adj)]
         )
@@ -598,6 +610,19 @@ class MotorMapping(klibs.Experiment):
         self.show_demo_text(
             ("Make sure to imagine how the movements would *feel* in your arm and "
              "wrist\nin addition to how the cursor would move on screen in response."),
+            [(self.fixation, P.screen_c), (self.target, target_loc),
+             (self.cursor, cursor_loc_adj)]
+        )
+        self.show_demo_text(
+            ("If you imagine yourself making mistakes at first (e.g. moving the "
+             "joystick directly towards\nthe target instead of compensating for the "
+             "rotation) this is normal and expected!"),
+            [(self.fixation, P.screen_c), (self.target, target_loc),
+             (self.cursor, cursor_loc_adj)]
+        )
+        self.show_demo_text(
+            ("When this happens, simply imagine performing a correction movement\n"
+             "to bring the cursor to the target before responding."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
              (self.cursor, cursor_loc_adj)]
         )
