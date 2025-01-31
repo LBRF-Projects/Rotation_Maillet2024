@@ -233,12 +233,21 @@ class MotorMapping(klibs.Experiment):
     def trial_prep(self):
 
         # Every 40 trials during training block, do block break
+        msgs = {
+            "CC": "the time estimation task.",
+            "MI": "practicing the task mentally.",
+            "PP": "practicing the task physically.",
+        }
+        break_txt = [
+            "Take a short break!",
+            "Whenever you're ready, press any button to resume " + msgs[self.trial_type]
+        ]
+        if self.trial_type != "CC":
+            break_txt.append("\nKeep in mind the 45° counter-clockwise rotation!")
         if self.phase == "training" and P.trial_number > 1:
             if (P.trial_number - 1) % 40 == 0:
                 self.show_demo_text(
-                    ["Take a short break!",
-                     "Whenever you're ready, press any button to resume the task."],
-                    stim_set=[], msg_y=int(0.45 * P.screen_y)
+                    break_txt, stim_set=[], msg_y=int(0.45 * P.screen_y)
                 )
 
         # Generate trial factors
