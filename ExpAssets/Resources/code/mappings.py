@@ -13,6 +13,10 @@ stick_map = {
     'rightx': 'a0',
     'righty': 'a1',
     'a': 'b1',
+    'x': 'b2',
+    'y': 'b3',
+    'leftshoulder': 'b4',
+    'rightshoulder': 'b5',
     'righttrigger': 'b0',
 }
 
