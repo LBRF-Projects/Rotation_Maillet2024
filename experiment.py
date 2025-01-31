@@ -75,6 +75,25 @@ class MotorMapping(klibs.Experiment):
         if P.development_mode and P.show_gamepad_debug:
             add_text_style('debug', '0.3deg')
 
+        # Generate additional task demo stimuli
+        target_dist = (2 * self.target_dist_min + self.target_dist_max) / 3
+        dist = target_dist / 2 # Distance between screen center & arrow midpoint
+        tl = deg_to_px(3.5) # Arrow tail length
+        tls = deg_to_px(1.5) # Arrow tail length (small)
+        tw = deg_to_px(0.15) # Arrow tail thickness
+        hlw = deg_to_px(0.4) # Arrow head length/width
+        lt = deg_to_px(0.05) # Arrow outline thickness
+        self.demo_arrows = {
+            'cursor90': demo_arrow(tl, tw, hlw, hlw, dist, angle=90),
+            'cursor135': demo_arrow(tl, tw, hlw, hlw, dist, angle=135),
+            'joystick135': demo_arrow(tl, tw, hlw, hlw, dist, outline=lt, angle=135),
+            'joystick180': demo_arrow(tl, tw, hlw, hlw, dist, outline=lt, angle=180),
+            'cursor90_small': demo_arrow(tls, tw, hlw, hlw, dist * 0.65, angle=90),
+            'cursor_adj': demo_arrow(
+                (tl + tls) / 2, tw, hlw, hlw, dist * 1.4, angle=120, rotation=162
+            ),
+        }
+
         # Define quadrants for targets
         self.quadrants = {
             'a': (0, 90),
@@ -550,9 +569,9 @@ class MotorMapping(klibs.Experiment):
     def rotation_instructions(self):
         # Initialize task stimuli for the demo
         target_dist = (2 * self.target_dist_min + self.target_dist_max) / 3
-        target_loc = vector_to_pos(P.screen_c, target_dist, 225)
+        cursor_loc = vector_to_pos(P.screen_c, target_dist, 225)
         cursor_loc_miss = vector_to_pos(P.screen_c, target_dist, 180)
-        cursor_loc_adj = (target_loc[0] + 4, target_loc[1] + 6)
+        target_loc = (cursor_loc[0] + 4, cursor_loc[1] + 6)
         feedback = message("{:.3f}".format(2.431))
         
         # Actually run through demo
@@ -563,22 +582,26 @@ class MotorMapping(klibs.Experiment):
         )
         self.show_demo_text(
             ("Specifically, cursor movement will now be rotated 45° counter-clockwise "
-             "such that\njoystick movement and cursor movement are no longer aligned."),
+             "such that\njoystick movement (arrow outline) and cursor movement (solid "
+             "arrow) are no longer aligned."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
+             self.demo_arrows["cursor90"], self.demo_arrows["joystick135"],
              (self.cursor, cursor_loc_miss)]
         )
         self.show_demo_text(
             ("This may take some time to get used to. Do your best to try and adapt "
              "to\nthe rotation by adjusting your joystick movement to compensate."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
-             (self.cursor, cursor_loc_adj)]
+             self.demo_arrows["cursor135"], self.demo_arrows["joystick180"],
+             (self.cursor, cursor_loc)]
         )
         self.show_demo_text(
             ("Your job is to try and adapt your movements to the rotation so that "
-             "moving the\ncursor straight towards the target eventually feels normal "
+             "moving the\ncursor straight to the target eventually feels normal "
              "and automatic again."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
-             (self.cursor, cursor_loc_adj)]
+             self.demo_arrows["cursor135"],
+             (self.cursor, cursor_loc)]
         )
         self.show_demo_text(
             ("Despite the rotation, please continue to try and respond to targets\n"
@@ -590,9 +613,9 @@ class MotorMapping(klibs.Experiment):
     def training_instructions_mi(self):
         # Initialize task stimuli for the demo
         target_dist = (2 * self.target_dist_min + self.target_dist_max) / 3
-        target_loc = vector_to_pos(P.screen_c, target_dist, 225)
+        cursor_loc = vector_to_pos(P.screen_c, target_dist, 225)
         cursor_loc_miss = vector_to_pos(P.screen_c, target_dist, 180)
-        cursor_loc_adj = (target_loc[0] + 4, target_loc[1] + 6)
+        target_loc = (cursor_loc[0] + 4, cursor_loc[1] + 6)
         
         # Actually run through demo
         self.show_demo_text(
@@ -605,26 +628,30 @@ class MotorMapping(klibs.Experiment):
             ("Do your best to mentally simulate the arm and wrist movements needed to\n"
              "bring the cursor to the target, keeping in mind the 45° rotation."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
-             (self.cursor, cursor_loc_miss)]
+             self.demo_arrows["joystick180"],
+             (self.cursor, P.screen_c)]
         )
         self.show_demo_text(
             ("Make sure to imagine how the movements would *feel* in your arm and "
              "wrist\nin addition to how the cursor would move on screen in response."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
-             (self.cursor, cursor_loc_adj)]
+             self.demo_arrows["joystick180"], self.demo_arrows["cursor135"], 
+             (self.cursor, P.screen_c)]
         )
         self.show_demo_text(
             ("If you imagine yourself making mistakes at first (e.g. moving the "
              "joystick directly towards\nthe target instead of compensating for the "
              "rotation) this is normal and expected!"),
             [(self.fixation, P.screen_c), (self.target, target_loc),
-             (self.cursor, cursor_loc_adj)]
+             self.demo_arrows["cursor90_small"],
+             (self.cursor, P.screen_c)]
         )
         self.show_demo_text(
             ("When this happens, simply imagine performing a correction movement\n"
              "to bring the cursor to the target before responding."),
             [(self.fixation, P.screen_c), (self.target, target_loc),
-             (self.cursor, cursor_loc_adj)]
+             self.demo_arrows["cursor90_small"], self.demo_arrows["cursor_adj"],
+             (self.cursor, P.screen_c)]
         )
 
 
@@ -762,3 +789,16 @@ def vector_to_pos(origin, amplitude, angle, return_int=True):
     # Gets the (x,y) coords of a vector's endpoint given its origin/angle/length
     # (0 degrees is directly up, 90 deg. is directly right, etc.)
     return point_pos(origin, amplitude, angle, rotation=-90, clockwise=True)
+
+
+def demo_arrow(tl, tt, hl, ht, dist, angle, rotation=None, outline=None):
+    # Creates an arrow with a given rotation and location for the task instructions
+    if not rotation:
+        rotation = angle
+    if outline:
+        stroke = [outline, WHITE, klibs.STROKE_CENTER]
+        arrow = kld.Arrow(tl, tt, hl, ht, fill=None, stroke=stroke, rotation=rotation)
+    else:
+        arrow = kld.Arrow(tl, tt, hl, ht, fill=WHITE, rotation=rotation)
+    loc = vector_to_pos(P.screen_c, dist, angle + 90)
+    return (arrow, loc)
